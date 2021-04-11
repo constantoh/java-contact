@@ -1,36 +1,46 @@
 package com.sangsoo.contact;
 
-
 import com.sangsoo.contact.controller.PhoneBookManager;
-
-import java.io.BufferedReader;
-import java.io.IOError;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Scanner;
+import com.sangsoo.contact.controller.INIT_MENU;
+import com.sangsoo.contact.controller.WrongInputException;
 
 public class ContactMain {
-    public static void main(String[] args){
-        PhoneBookManager manage = new PhoneBookManager();
+    public static void main(String[] args) {
+        /**
+         *  v 0.5 에서 singleton
+         * */
+//        PhoneBookManager manager = new PhoneBookManager();
+        PhoneBookManager manager = PhoneBookManager.createManagerInstance();
 
-        while(true){
-            manage.showMenu();
-            int choice = manage.getScanner().nextInt();
-            manage.getScanner().nextLine();
+        while (true) {
+            /**
+             *  v 0.6 Exception 추가
+             * */
+            try {
+                manager.showMenu();
+                int choice = manager.getScanner().nextInt();
+                manager.getScanner().nextLine();
 
-            switch (choice){
-                case 1:
-                    manage.insertFriend();
-                    break;
-                case 2:
-                    manage.findFriend();
-                    break;
-                case 3:
-                    manage.deleteFriend();
-                    break;
-                case 4: default:
-                    System.out.println("프로그램을 종료합니다.");
-                    return;
+                switch (choice) {
+                    case INIT_MENU.INPUT:
+                        manager.insertFriend();
+                        break;
+                    case INIT_MENU.SEARCH:
+                        manager.findFriend();
+                        break;
+                    case INIT_MENU.DELETE:
+                        manager.deleteFriend();
+                        break;
+                    case INIT_MENU.EXIT:
+                        return;
+                    default:
+                        throw new WrongInputException(choice);
+                }
+            } catch (WrongInputException e) {
+               e.showWrongChoice();
+               System.out.println("처음부터 다시 진행합니다.");
+            } catch (Exception e) {
+
             }
         }
     }
