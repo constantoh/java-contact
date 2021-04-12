@@ -4,6 +4,8 @@ import com.sangsoo.contact.vo.PhoneCompanyInfo;
 import com.sangsoo.contact.vo.PhoneInfo;
 import com.sangsoo.contact.vo.PhoneUnivInfo;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Scanner;
 
 public class PhoneBookManager {
@@ -14,10 +16,10 @@ public class PhoneBookManager {
     public static PhoneBookManager manager = null;
 
     // instance variables
-    final static int MAX_FRIEND = 100;
-    private PhoneInfo[] friends = new PhoneInfo[MAX_FRIEND];
-    private int friendNumber = 0;
-
+    /**
+     * v 0.7 hashSet
+     * */
+    HashSet<PhoneInfo> infoStorage = new HashSet<PhoneInfo>();
     //constructor -> private 처리 후 singleton
     private PhoneBookManager() {
 
@@ -54,7 +56,13 @@ public class PhoneBookManager {
             System.out.print("전화번호 : ");
             String phoneNumber = menuViewer.sc.nextLine();
 
-            friends[friendNumber++] = new PhoneInfo(name, phoneNumber);
+            if(infoStorage.add(new PhoneInfo(name, phoneNumber))){
+                System.out.println("데이터 입력이 완료되었습니다.");
+            }else{
+                System.out.println("이미 저장된 데이터입니다.");
+                return;
+            }
+
         }else if(choice == INPUT_SELECT.UNIV){
             System.out.print("이름 : ");
             String name = menuViewer.sc.nextLine();
@@ -65,7 +73,12 @@ public class PhoneBookManager {
             System.out.print("학년 : ");
             int year = menuViewer.sc.nextInt();
 
-            friends[friendNumber++] = new PhoneUnivInfo(name, phoneNumber, major, year);
+            if(infoStorage.add(new PhoneUnivInfo(name, phoneNumber, major, year))){
+                System.out.println("데이터 입력이 완료되었습니다.");
+            }else{
+                System.out.println("이미 저장된 데이터입니다.");
+                return;
+            }
         }else if(choice == INPUT_SELECT.COMPANY){
             System.out.print("이름 : ");
             String name = menuViewer.sc.nextLine();
@@ -74,7 +87,14 @@ public class PhoneBookManager {
             System.out.print("회사 : ");
             String company = menuViewer.sc.nextLine();
 
-            friends[friendNumber++] = new PhoneCompanyInfo(name, phoneNumber, company);
+
+            if(infoStorage.add(new PhoneCompanyInfo(name, phoneNumber, company))){
+                System.out.println("데이터 입력이 완료되었습니다.");
+            }else{
+                System.out.println("이미 저장된 데이터입니다.");
+                return;
+            }
+
         }else{
             throw new WrongInputException(choice);
         }
@@ -90,11 +110,12 @@ public class PhoneBookManager {
         System.out.print("이름 : ");
         String name = menuViewer.sc.nextLine();
 
-        int index = find(name);
-        if(index < 0){
-            System.out.println("해당 데이터는 존재하지 않습니다.");
+        PhoneInfo info = find(name);
+        if( info != null){
+            info.showPhoneInfo();
+            System.out.println("데이터 검색이 완료되었습니다.");
         }else{
-            friends[index].showPhoneInfo();
+            System.out.println("해당 데이터는 존재하지 않습니다.");
         }
     }
     /**
@@ -106,29 +127,26 @@ public class PhoneBookManager {
         System.out.print("이름 : ");
         String name = menuViewer.sc.nextLine();
 
-        int index = find(name);
-        if(index < 0){
-            System.out.println("해당 데이터는 존재하지 않습니다.");
+        PhoneInfo info = find(name);
+        if( info != null){
+            infoStorage.remove(info);
+            System.out.println("데이터 삭제를 완료되었습니다.");
         }else{
-            for(int i=index; i<friendNumber-1; i++){
-                friends[i] = friends[i+1];
-            }
+            System.out.println("해당 데이터는 존재하지 않습니다.");
         }
-        friendNumber--;
-        System.out.println("데이터 삭제를 완료되었습니다.");
     }
     /**
      * 4. ETC ..
      * */
-    public int find(String name){
-        int returnIdx = -1;
-
-        for(int i=0; i<friendNumber; i++){
-            if(name.compareTo(friends[i].getName()) == 0){
-                return i;
+    public PhoneInfo find(String name){
+        Iterator<PhoneInfo> itr = infoStorage.iterator();
+        while(itr.hasNext()){
+            PhoneInfo info = itr.next();
+            if( info.getName().equals(name)){
+                return info;
             }
         }
-        return returnIdx;
+        return null;
     }
 }
 class MenuViewer{
